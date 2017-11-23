@@ -32,6 +32,8 @@ ATTR_MAX_BYTE_RATE_DOWN = 'max_byte_rate_down'
 ATTR_MAX_BYTE_RATE_UP = 'max_byte_rate_up'
 ATTR_UPTIME = 'uptime'
 ATTR_WAN_ACCESS_TYPE = 'wan_access_type'
+ATTR_TRANSMISSION_RATE_DOWN = 'transmission_rate_down'
+ATTR_TRANSMISSION_RATE_UP = 'transmission_rate_up'
 
 MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=5)
 
@@ -79,6 +81,7 @@ class FritzboxMonitorSensor(Entity):
         self._external_ip = self._uptime = None
         self._bytes_sent = self._bytes_received = None
         self._max_byte_rate_up = self._max_byte_rate_down = None
+        self._transmission_rate_up = self._transmission_rate_down = None
 
     @property
     def name(self):
@@ -111,6 +114,8 @@ class FritzboxMonitorSensor(Entity):
             ATTR_BYTES_RECEIVED: self._bytes_received,
             ATTR_MAX_BYTE_RATE_UP: self._max_byte_rate_up,
             ATTR_MAX_BYTE_RATE_DOWN: self._max_byte_rate_down,
+            ATTR_TRANSMISSION_RATE_UP: self._transmission_rate_up,
+            ATTR_TRANSMISSION_RATE_DOWN: self._transmission_rate_down,
         }
         return attr
 
@@ -125,8 +130,10 @@ class FritzboxMonitorSensor(Entity):
             self._uptime = self._fstatus.uptime
             self._bytes_sent = self._fstatus.bytes_sent
             self._bytes_received = self._fstatus.bytes_received
-            self._max_byte_rate_up = self._fstatus.max_byte_rate[0]
-            self._max_byte_rate_down = self._fstatus.max_byte_rate[1]
+            self._max_byte_rate_up, self._max_byte_rate_down = \
+                    self._fstatus.max_byte_rate
+            self._transmission_rate_up, self._transmission_rate_down = \
+                    self._fstatus.transmission_rate
             self._state = STATE_ONLINE if self._is_connected else STATE_OFFLINE
         except RequestException as err:
             self._state = STATE_UNAVAILABLE
